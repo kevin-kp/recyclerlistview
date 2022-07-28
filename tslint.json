@@ -21,6 +21,7 @@
         "no-bitwise": false,
         "member-access": true,
         "ordered-imports": false,
-        "object-literal-sort-keys": false
+        "object-literal-sort-keys": false,
+        "array-type": [true, "array-simple"]
     }
 }
