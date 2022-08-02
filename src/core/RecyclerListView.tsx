@@ -430,8 +430,8 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
                 contentHeight={this._initComplete ? this._virtualRenderer.getLayoutDimension().height : 0}
                 contentWidth={this._initComplete ? this._virtualRenderer.getLayoutDimension().width : 0}
                 renderAheadOffset={this.getCurrentRenderAheadOffset()}>
-                {this._generateRenderStack().map((row) => {
-                    return (<RowRenderer row={row} key={Math.random()} />);
+                {this._generateRenderStack().map((result) => {
+                    return (<RowRenderer row={result.row} key={result.key} />);
                 })}
             </ScrollComponent>
         );
@@ -748,11 +748,14 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
         }
     }
 
-    private _generateRenderStack(): Array<Promise<JSX.Element | null>> {
-        const renderedItems = [];
+    private _generateRenderStack(): RenderStackRowResult[] {
+        const renderedItems: RenderStackRowResult[] = [];
         for (const key in this.state.renderStack) {
             if (this.state.renderStack.hasOwnProperty(key)) {
-                renderedItems.push(this._renderRowUsingMeta(this.state.renderStack[key]));
+                renderedItems.push({
+                    row: this._renderRowUsingMeta(this.state.renderStack[key]),
+                    key,
+                });
             }
         }
         return renderedItems;
@@ -924,6 +927,11 @@ RecyclerListView.propTypes = {
     //Used to specify is window correction config and whether it should be applied to some scroll events
     windowCorrectionConfig: PropTypes.object,
 };
+
+interface RenderStackRowResult {
+    row: Promise<JSX.Element | null>;
+    key: string;
+}
 
 interface RowRendererProps {
     row: Promise<JSX.Element | null>;
