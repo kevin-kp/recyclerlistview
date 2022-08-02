@@ -752,9 +752,14 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
         const renderedItems: RenderStackRowResult[] = [];
         for (const key in this.state.renderStack) {
             if (this.state.renderStack.hasOwnProperty(key)) {
+                const item = this.state.renderStack[key];
+                const index = item.dataIndex;
+                if (index === undefined) {
+                    continue;
+                }
                 renderedItems.push({
-                    row: this._renderRowUsingMeta(this.state.renderStack[key]),
-                    key,
+                    row: this._renderRowUsingMeta(item),
+                    key: this._virtualRenderer.syncAndGetKey(index),
                 });
             }
         }
@@ -930,7 +935,7 @@ RecyclerListView.propTypes = {
 
 interface RenderStackRowResult {
     row: Promise<JSX.Element | null>;
-    key: string;
+    key: string | number;
 }
 
 interface RowRendererProps {
