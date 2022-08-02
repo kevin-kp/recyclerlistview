@@ -940,7 +940,7 @@ class RowRenderer extends React.Component<RowRendererProps, RowRendererState> {
                 unpackedRow: result,
             });
         });
-    };
+    }
 
     public componentDidUpdate = (prevProps: Readonly<RowRendererProps>, prevState: Readonly<RowRendererState>, snapshot?: any) => {
         this.props.row.then((result) => {
@@ -948,7 +948,7 @@ class RowRenderer extends React.Component<RowRendererProps, RowRendererState> {
                 unpackedRow: result,
             });
         });
-    };
+    }
 
     public render = () => {
         return this.state.unpackedRow;
