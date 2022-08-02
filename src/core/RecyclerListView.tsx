@@ -937,9 +937,9 @@ class RowRenderer extends React.Component<RowRendererProps, RowRendererState> {
 
     constructor(props: RowRendererProps) {
         super(props);
-        this.setState({
+        this.state = {
             unpackedRow: null,
-        });
+        };
     }
 
     public componentDidMount = () => {
