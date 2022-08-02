@@ -19,8 +19,8 @@ export class GridLayoutProvider extends LayoutProvider {
   ) {
     super(
       getLayoutType,
-      (type: string | number, dimension: Dimension, index: number) => {
-        this.setLayout(dimension, index);
+      async (type: string | number, dimension: Dimension, index: number) => {
+        await this.setLayout(dimension, index);
       },
     );
     this._getHeightOrWidth = getHeightOrWidth;
@@ -35,7 +35,7 @@ export class GridLayoutProvider extends LayoutProvider {
     return new GridLayoutManager(this, renderWindowSize, this._getSpan, this._maxSpan, this._acceptableRelayoutDelta, this._isHorizontal, cachedLayouts);
   }
 
-  private setLayout(dimension: Dimension, index: number): void {
+  private setLayout(dimension: Dimension, index: number): Promise<void> {
     const maxSpan: number = this._maxSpan;
     const itemSpan: number = this._getSpan(index);
     if (itemSpan > maxSpan) {
@@ -53,5 +53,6 @@ export class GridLayoutProvider extends LayoutProvider {
     } else {
       throw new Error("setLayout called before layoutmanager was created, cannot be handled");
     }
+    return Promise.resolve();
   }
 }
