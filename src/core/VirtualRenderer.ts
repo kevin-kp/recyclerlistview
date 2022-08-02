@@ -129,10 +129,10 @@ export default class VirtualRenderer {
         this._dimensions = dim;
     }
 
-    public setLayoutManager(layoutManager: LayoutManager): void {
+    public async setLayoutManager(layoutManager: LayoutManager): Promise<void> {
         this._layoutManager = layoutManager;
         if (this._params) {
-            this._layoutManager.relayoutFromIndex(0, this._params.itemCount);
+            await this._layoutManager.relayoutFromIndex(0, this._params.itemCount);
         }
     }
 

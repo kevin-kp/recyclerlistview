@@ -24,7 +24,7 @@ export abstract class BaseLayoutProvider {
 
     //Check if given dimension contradicts with your layout provider, return true for mismatches. Returning true will
     //cause a relayout to fix the discrepancy
-    public abstract checkDimensionDiscrepancy(dimension: Dimension, type: string | number, index: number): boolean;
+    public abstract checkDimensionDiscrepancy(dimension: Dimension, type: string | number, index: number): Promise<boolean>;
 
     public createLayoutManager(renderWindowSize: Dimension, isHorizontal?: boolean, cachedLayouts?: Layout[]): LayoutManager {
         this._lastLayoutManager = this.newLayoutManager(renderWindowSize, isHorizontal, cachedLayouts);
@@ -43,10 +43,11 @@ export abstract class BaseLayoutProvider {
 
 export class LayoutProvider extends BaseLayoutProvider {
     private _getLayoutTypeForIndex: (index: number) => string | number;
-    private _setLayoutForType: (type: string | number, dim: Dimension, index: number) => void;
+    private _setLayoutForType: (type: string | number, dim: Dimension, index: number) => Promise<void>;
     private _tempDim: Dimension;
 
-    constructor(getLayoutTypeForIndex: (index: number) => string | number, setLayoutForType: (type: string | number, dim: Dimension, index: number) => void) {
+    constructor(getLayoutTypeForIndex: (index: number) => string | number,
+                setLayoutForType: (type: string | number, dim: Dimension, index: number) => Promise<void>) {
         super();
         this._getLayoutTypeForIndex = getLayoutTypeForIndex;
         this._setLayoutForType = setLayoutForType;
@@ -64,13 +65,13 @@ export class LayoutProvider extends BaseLayoutProvider {
 
     //Given a type and dimension set the dimension values on given dimension object
     //You can also get index here if you add an extra argument but we don't recommend using it.
-    public setComputedLayout(type: string | number, dimension: Dimension, index: number): void {
-        return this._setLayoutForType(type, dimension, index);
+    public async setComputedLayout(type: string | number, dimension: Dimension, index: number): Promise<void> {
+        return await this._setLayoutForType(type, dimension, index);
     }
 
-    public checkDimensionDiscrepancy(dimension: Dimension, type: string | number, index: number): boolean {
+    public async checkDimensionDiscrepancy(dimension: Dimension, type: string | number, index: number): Promise<boolean> {
         const dimension1 = dimension;
-        this.setComputedLayout(type, this._tempDim, index);
+        await this.setComputedLayout(type, this._tempDim, index);
         const dimension2 = this._tempDim;
         const layoutManager = this.getLayoutManager();
         if (layoutManager) {

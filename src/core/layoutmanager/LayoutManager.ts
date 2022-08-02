@@ -50,7 +50,7 @@ export abstract class LayoutManager {
     public abstract overrideLayout(index: number, dim: Dimension): boolean;
 
     //Recompute layouts from given index, compute heavy stuff should be here
-    public abstract relayoutFromIndex(startIndex: number, itemCount: number): void;
+    public abstract relayoutFromIndex(startIndex: number, itemCount: number): Promise<void>;
 }
 
 export class WrapGridLayoutManager extends LayoutManager {
@@ -109,7 +109,7 @@ export class WrapGridLayoutManager extends LayoutManager {
     }
 
     //TODO:Talha laziliy calculate in future revisions
-    public relayoutFromIndex(startIndex: number, itemCount: number): void {
+    public async relayoutFromIndex(startIndex: number, itemCount: number): Promise<void> {
         startIndex = this._locateFirstNeighbourIndex(startIndex);
         let startX = 0;
         let startY = 0;
@@ -136,7 +136,7 @@ export class WrapGridLayoutManager extends LayoutManager {
                 itemDim.height = oldLayout.height;
                 itemDim.width = oldLayout.width;
             } else {
-                this._layoutProvider.setComputedLayout(layoutType, itemDim, i);
+                await this._layoutProvider.setComputedLayout(layoutType, itemDim, i);
             }
             this.setMaxBounds(itemDim);
             while (!this._checkBounds(startX, startY, itemDim, this._isHorizontal)) {
