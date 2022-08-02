@@ -430,7 +430,9 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
                 contentHeight={this._initComplete ? this._virtualRenderer.getLayoutDimension().height : 0}
                 contentWidth={this._initComplete ? this._virtualRenderer.getLayoutDimension().width : 0}
                 renderAheadOffset={this.getCurrentRenderAheadOffset()}>
-                {this._generateRenderStack()}
+                {this._generateRenderStack().map((row) => {
+                    return (<RowRenderer row={row} key={Math.random()} />);
+                })}
             </ScrollComponent>
         );
     }
@@ -746,11 +748,11 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
         }
     }
 
-    private async _generateRenderStack(): Promise<Array<JSX.Element | null>> {
+    private _generateRenderStack(): Array<Promise<JSX.Element | null>> {
         const renderedItems = [];
         for (const key in this.state.renderStack) {
             if (this.state.renderStack.hasOwnProperty(key)) {
-                renderedItems.push(await this._renderRowUsingMeta(this.state.renderStack[key]));
+                renderedItems.push(this._renderRowUsingMeta(this.state.renderStack[key]));
             }
         }
         return renderedItems;
@@ -922,3 +924,33 @@ RecyclerListView.propTypes = {
     //Used to specify is window correction config and whether it should be applied to some scroll events
     windowCorrectionConfig: PropTypes.object,
 };
+
+interface RowRendererProps {
+    row: Promise<JSX.Element | null>;
+}
+
+interface RowRendererState {
+    unpackedRow: JSX.Element | null;
+}
+
+class RowRenderer extends React.Component<RowRendererProps, RowRendererState> {
+    public componentDidMount = () => {
+        this.props.row.then((result) => {
+            this.setState({
+                unpackedRow: result,
+            });
+        });
+    };
+
+    public componentDidUpdate = (prevProps: Readonly<RowRendererProps>, prevState: Readonly<RowRendererState>, snapshot?: any) => {
+        this.props.row.then((result) => {
+            this.setState({
+                unpackedRow: result,
+            });
+        });
+    };
+
+    public render = () => {
+        return this.state.unpackedRow;
+    }
+}
