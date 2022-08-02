@@ -950,7 +950,10 @@ class RowRenderer extends React.Component<RowRendererProps, RowRendererState> {
         });
     }
 
-    public componentDidUpdate = (prevProps: Readonly<RowRendererProps>, prevState: Readonly<RowRendererState>, snapshot?: any) => {
+    public componentDidUpdate = (prevProps: Readonly<RowRendererProps>, _prevState: Readonly<RowRendererState>, _snapshot?: any) => {
+        if (prevProps.row === this.props.row) {
+            return;
+        }
         this.props.row.then((result) => {
             this.setState({
                 unpackedRow: result,
