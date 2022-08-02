@@ -934,6 +934,14 @@ interface RowRendererState {
 }
 
 class RowRenderer extends React.Component<RowRendererProps, RowRendererState> {
+
+    constructor(props: RowRendererProps) {
+        super(props);
+        this.setState({
+            unpackedRow: null,
+        });
+    }
+
     public componentDidMount = () => {
         this.props.row.then((result) => {
             this.setState({
