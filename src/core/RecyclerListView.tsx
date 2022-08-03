@@ -686,7 +686,7 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
             const styleOverrides = (this._virtualRenderer.getLayoutManager() as LayoutManager).getStyleOverridesForIndex(dataIndex);
             this._assertType(type);
             let forceNonDeterministicRendering = this.props.forceNonDeterministicRendering;
-            if (!this.shouldApplyNonDeterministicRendering(type, dataIndex)) {
+            if (forceNonDeterministicRendering && !this.shouldApplyNonDeterministicRendering(type, dataIndex)) {
                 forceNonDeterministicRendering = false;
             }
             if (!forceNonDeterministicRendering) {
