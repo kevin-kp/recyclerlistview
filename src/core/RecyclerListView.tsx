@@ -100,6 +100,7 @@ export interface RecyclerListViewProps {
     useWindowScroll?: boolean;
     disableRecycling?: boolean;
     forceNonDeterministicRendering?: boolean;
+    shouldApplyNonDeterministicRendering: (type: string | number, index: number) => boolean;
     extendedState?: object;
     itemAnimator?: ItemAnimator;
     optimizeForInsertDeleteAnimations?: boolean;
@@ -446,6 +447,13 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
         }
     }
 
+    protected shouldApplyNonDeterministicRendering(type: string | number, index: number): boolean {
+        if (this.props.shouldApplyNonDeterministicRendering) {
+            return this.props.shouldApplyNonDeterministicRendering(type, index);
+        }
+        return true;
+    }
+
     private _onItemLayout = (index: number) => {
         this.onItemLayout(index);
     }
@@ -677,7 +685,11 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
             const key = this._virtualRenderer.syncAndGetKey(dataIndex);
             const styleOverrides = (this._virtualRenderer.getLayoutManager() as LayoutManager).getStyleOverridesForIndex(dataIndex);
             this._assertType(type);
-            if (!this.props.forceNonDeterministicRendering) {
+            let forceNonDeterministicRendering = this.props.forceNonDeterministicRendering;
+            if (forceNonDeterministicRendering && !this.shouldApplyNonDeterministicRendering(type, dataIndex)) {
+                forceNonDeterministicRendering = false;
+            }
+            if (!forceNonDeterministicRendering) {
                 this._checkExpectedDimensionDiscrepancy(itemRect, type, dataIndex);
             }
             return (
@@ -689,7 +701,7 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
                     index={dataIndex}
                     styleOverrides={styleOverrides}
                     layoutProvider={this.props.layoutProvider}
-                    forceNonDeterministicRendering={this.props.forceNonDeterministicRendering}
+                    forceNonDeterministicRendering={forceNonDeterministicRendering}
                     isHorizontal={this.props.isHorizontal}
                     onSizeChanged={this._onViewContainerSizeChange}
                     childRenderer={this.props.rowRenderer}
@@ -708,9 +720,8 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
     private _onViewContainerSizeChange = (dim: Dimension, index: number): void => {
         //Cannot be null here
         const layoutManager: LayoutManager = this._virtualRenderer.getLayoutManager() as LayoutManager;
-
+        const itemRect = layoutManager.getLayouts()[index];
         if (this.props.debugHandlers && this.props.debugHandlers.resizeDebugHandler) {
-            const itemRect = layoutManager.getLayouts()[index];
             this.props.debugHandlers.resizeDebugHandler.resizeDebug({
                 width: itemRect.width,
                 height: itemRect.height,
@@ -718,7 +729,17 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
         }
 
         // Add extra protection for overrideLayout as it can only be called when non-deterministic rendering is used.
-        if (this.props.forceNonDeterministicRendering && layoutManager.overrideLayout(index, dim)) {
+        if (!this.props.forceNonDeterministicRendering) {
+            return;
+        }
+        let newDim = {
+            width: itemRect.width,
+            height: itemRect.height,
+        };
+        if (this.shouldApplyNonDeterministicRendering(itemRect.type, index)) {
+            newDim = dim;
+        }
+        if (layoutManager.overrideLayout(index, newDim)) {
             if (this._relayoutReqIndex === -1) {
                 this._relayoutReqIndex = index;
             } else {
@@ -866,6 +887,8 @@ RecyclerListView.propTypes = {
     //Default is false, if enabled dimensions provided in layout provider will not be strictly enforced.
     //Rendered dimensions will be used to relayout items. Slower if enabled.
     forceNonDeterministicRendering: PropTypes.bool,
+
+    shouldApplyNonDeterministicRendering: PropTypes.func,
 
     //In some cases the data passed at row level may not contain all the info that the item depends upon, you can keep all other info
     //outside and pass it down via this prop. Changing this object will cause everything to re-render. Make sure you don't change
